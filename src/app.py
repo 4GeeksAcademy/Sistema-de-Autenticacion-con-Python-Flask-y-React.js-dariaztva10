@@ -11,7 +11,7 @@ from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
-
+from werkzeug.security import generate_password_hash, check_password_hash
 
 # from models import Persona
 
@@ -23,10 +23,9 @@ app = Flask(__name__)
 app.config["JWT_SECRET_KEY"] = "super-secret-de-momento"
 jwt = JWTManager(app)
 
-
 app.url_map.strict_slashes = False
 
-# database condiguration
+# database configuration
 db_url = os.getenv("DATABASE_URL")
 if db_url is not None:
     app.config['SQLALCHEMY_DATABASE_URI'] = db_url.replace(
@@ -41,24 +40,18 @@ db.init_app(app)
 # add the admin
 setup_admin(app)
 
-# add the admin
+# add the commands
 setup_commands(app)
 
-
-
-# Add all endpoints form the API with a "api" prefix
+# Add all endpoints from the API with an "api" prefix
 app.register_blueprint(api, url_prefix='/api')
 
 # Handle/serialize errors like a JSON object
-
-
 @app.errorhandler(APIException)
 def handle_invalid_usage(error):
     return jsonify(error.to_dict()), error.status_code
 
 # generate sitemap with all your endpoints
-
-
 @app.route('/')
 def sitemap():
     if ENV == "development":
@@ -66,8 +59,6 @@ def sitemap():
     return send_from_directory(static_file_dir, 'index.html')
 
 # any other endpoint will try to serve it like a static file
-
-
 @app.route('/<path:path>', methods=['GET'])
 def serve_any_other_file(path):
     if not os.path.isfile(os.path.join(static_file_dir, path)):
@@ -76,38 +67,7 @@ def serve_any_other_file(path):
     response.cache_control.max_age = 0  # avoid cache memory
     return response
 
-# Ruta para crear/ iniciar sesion
-@app.route('/signup', methods=['POST'])
-def signup():
- # AQUÍ DEBO IMPLEMENTAR LÓGICA PARA CREAR NUEVO USUARIO
-    pass
 
-# Ruta para autenticar los usuarios y devolver el token JWT
-@app.route("/token", methods=["POST"])
-def create_token():
-    username = request.json.get("username", None)
-    password = request.json.get("password", None)
-    # Consulta la base de datos por el nombre de usuario y la contraseña
-    user = User.query.filter_by(username=username, password=password).first()
-
-    if user is None:
-        # el usuario no se encontró en la base de datos
-        return jsonify({"msg": "Bad username or password"}), 401
-    
-     #Un nuevo token con el id de usuario dentro:
-    access_token = create_access_token(identity=user.id)
-    return jsonify({ "token": access_token, "user_id": user.id })
-
-# Uso el decorador @jwt_required() en rutas privadas (Protejo una ruta con jwt_required, bloqueo las peticiones sin un JWT válido)
-
-@app.route("/protected", methods=["GET"])
-@jwt_required()
-def protected():
-# Accedo a la identidad del usuario actual con get_jwt_identity
-    current_user_id = get_jwt_identity()
-    user = User.query.get(current_user_id)
-
-    return jsonify({"id": user.id, "username": user.username }), 200
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':

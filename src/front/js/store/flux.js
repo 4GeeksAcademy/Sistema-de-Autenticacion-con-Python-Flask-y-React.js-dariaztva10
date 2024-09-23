@@ -17,6 +17,66 @@ const getState = ({ getStore, getActions, setStore }) => {
 		},
 		actions: {
 			// Use getActions to call a function within a fuction
+
+			
+
+
+			signup:(email, password) => {
+				fetch(process.env.BACKEND_URL + "api/signup", {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json"
+					},
+					body: JSON.stringify({
+						email: email,
+						password: password,
+						is_active: true
+					})
+				})
+				.then((response)=>response.json())
+				.then(data=>console.log(data))
+				.catch(error=>console.log(error))
+			},
+
+			login:(email, password) => {
+				fetch(process.env.BACKEND_URL + "api/login", {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json"
+					},
+					body: JSON.stringify({
+						email: email,
+						password: password
+					})
+				})
+				.then((response)=>response.json())
+				.then(data=>localStorage.setItem("token", data.token))
+				.catch(error=>console.log(error))
+			},
+
+			getMyPosts: async () => {
+				const token = localStorage.getItem('token');
+				try {
+					const response = await fetch(process.env.BACKEND_URL + "/api/my_posts", {
+						method: 'GET',
+						headers: {
+							'Authorization': `Bearer ${token}`,
+							'Content-Type': 'application/json'
+						}
+					});
+					if (!response.ok) {
+						throw new Error(`Error: ${response.status}`);
+					}
+					const data = await response.json();
+					setStore({ myPosts: data.posts }); // Almacena los posts en el store
+					console.log("Posts:", data.posts);
+					return data.posts;
+				} catch (error) {
+					console.error("Error fetching posts:", error);
+				}
+			},
+
+
 			exampleFunction: () => {
 				getActions().changeColor(0, "green");
 			},
