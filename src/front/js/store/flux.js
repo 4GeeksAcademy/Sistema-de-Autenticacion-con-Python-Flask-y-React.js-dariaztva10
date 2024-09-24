@@ -1,63 +1,72 @@
 const getState = ({ getStore, getActions, setStore }) => {
 	return {
 		store: {
-			message: null,
-			demo: [
-				{
-					title: "FIRST",
-					background: "white",
-					initial: "white"
-				},
-				{
-					title: "SECOND",
-					background: "white",
-					initial: "white"
-				}
-			]
+			token: null,
+			users: [],
+			myPosts: []
+			
 		},
 		actions: {
 			// Use getActions to call a function within a fuction
 
+			signup: async(email, password) => {
+				try {
+					const resp = await fetch(process.env.BACKEND_URL + "api/signup", {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json"
+						},
+						body: JSON.stringify({
+							email: email,
+							password: password,
+							is_active: true
+						})
+					})
+					if (!resp.ok) throw new Error("Error")
+					const data = await resp.json();
+					return true
+				} catch (error) {
+					return false
+				}
+			},
+
+			login: async (email, password) => {
+				try {
+					const resp = await fetch(process.env.BACKEND_URL + "api/login", {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json"
+						},
+						body: JSON.stringify({
+							email: email,
+							password: password
+						})
+					});
+					if (!resp.ok) throw new Error("Error");
+					
+					const data = await resp.json();
+					
+					localStorage.setItem("token", data.access_token); 
+					
+					setStore({ token: data.access_token });
 			
-
-
-			signup:(email, password) => {
-				fetch(process.env.BACKEND_URL + "api/signup", {
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json"
-					},
-					body: JSON.stringify({
-						email: email,
-						password: password,
-						is_active: true
-					})
-				})
-				.then((response)=>response.json())
-				.then(data=>console.log(data))
-				.catch(error=>console.log(error))
+					return true;
+				} catch (error) {
+					console.log("Error logging in:", error);
+					return false;
+				}
 			},
-
-			login:(email, password) => {
-				fetch(process.env.BACKEND_URL + "api/login", {
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json"
-					},
-					body: JSON.stringify({
-						email: email,
-						password: password
-					})
-				})
-				.then((response)=>response.json())
-				.then(data=>localStorage.setItem("token", data.token))
-				.catch(error=>console.log(error))
+			
+			
+			logout: () => {
+				localStorage.removeItem("token");
+				setStore({ token: null });
+				console.log("Sesión cerrada");
 			},
-
 			getMyPosts: async () => {
 				const token = localStorage.getItem('token');
 				try {
-					const response = await fetch(process.env.BACKEND_URL + "/api/my_posts", {
+					const response = await fetch(process.env.BACKEND_URL + "api/my_posts", {
 						method: 'GET',
 						headers: {
 							'Authorization': `Bearer ${token}`,
@@ -84,7 +93,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 			getMessage: async () => {
 				try{
 					// fetching data from the backend
-					const resp = await fetch(process.env.BACKEND_URL + "/api/hello")
+					const resp = await fetch(process.env.BACKEND_URL + "api/hello")
 					const data = await resp.json()
 					setStore({ message: data.message })
 					// don't forget to return something, that is how the async resolves
