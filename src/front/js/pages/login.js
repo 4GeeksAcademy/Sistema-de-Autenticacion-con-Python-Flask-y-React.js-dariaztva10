@@ -38,7 +38,7 @@ const Login = () => {
                 <button
             
                 onClick={handleLogin}
-                >   Log in</button>
+                >   Login</button>
             </div>
             
         </div>

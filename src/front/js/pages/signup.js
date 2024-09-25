@@ -34,11 +34,11 @@ const Signup = () => {
             
             <div className="d-grid gap-2 col-6 mx-auto">
                 <button onClick={handleSignup}>
-                    Registrarse
+                    Signup
                 </button>
             </div>
             
-            {/* Añadimos el enlace al login */}
+            
             <div className="text-center mt-3">
                 <p>¿Ya tienes una cuenta? <Link to="/login">Inicia sesión</Link></p>
             </div>
