@@ -46,9 +46,9 @@ const getState = ({ getStore, getActions, setStore }) => {
 					
 					const data = await resp.json();
 					
-					localStorage.setItem("token", data.access_token); 
+					localStorage.setItem("token", data.token); 
 					
-					setStore({ token: data.access_token });
+					setStore({ token: data.token });
 			
 					return true;
 				} catch (error) {
@@ -66,7 +66,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 			getMyPosts: async () => {
 				const token = localStorage.getItem('token');
 				try {
-					const response = await fetch(process.env.BACKEND_URL + "api/my_posts", {
+					const response = await fetch(process.env.BACKEND_URL + "api/protected", {
 						method: 'GET',
 						headers: {
 							'Authorization': `Bearer ${token}`,
@@ -77,9 +77,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 						throw new Error(`Error: ${response.status}`);
 					}
 					const data = await response.json();
-					setStore({ myPosts: data.posts }); // Almacena los posts en el store
-					console.log("Posts:", data.posts);
-					return data.posts;
+					return data.id;
 				} catch (error) {
 					console.error("Error fetching posts:", error);
 				}

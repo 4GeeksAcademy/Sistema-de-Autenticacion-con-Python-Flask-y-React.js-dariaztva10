@@ -18,12 +18,18 @@ const Private = () => {
             navigate('/');
         } else {
             const fetchPosts = async () => {
-                await actions.getMyPosts(); // Espera a que se completen los posts
-                setLoading(false); // Solo setea loading en false después de obtener los posts
+                const autentication = await actions.getMyPosts(); // Espera a que se completen los posts
+               
+                console.log(autentication)
+                if (autentication){
+                    setLoading(false); 
+                } else {
+                    navigate('/')
+                }
             };
             fetchPosts();
         }
-    }, [navigate, actions]);
+    }, []);
     
     // Si estás cargando las publicaciones, puedes mostrar un loading
     if (loading) {
